@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F5F1" />
+<title>标普红利低波50全收益 · 年线结构</title>
+<style>
+  :root{
+    --bg:#F7F5F1;
+    --card:#FFFFFF;
+    --ink:#1C1917;
+    --muted:#78716C;
+    --line:#E7E5E4;
+    --above:#C2410C;
+    --above-soft:rgba(194,65,12,.12);
+    --below:#0F766E;
+    --below-soft:rgba(15,118,110,.12);
+    --accent:#1D4ED8;
+    --warn-bg:#FFFBEB;
+    --warn-line:#FDE68A;
+    --warn-ink:#92400E;
+    --shadow:0 1px 2px rgba(28,25,23,.05),0 8px 24px rgba(28,25,23,.04);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 14px 48px}
+  header{margin-bottom:16px}
+  .eyebrow{
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin-bottom:6px;
+  }
+  h1{margin:0 0 8px;font-size:clamp(20px,5vw,28px);line-height:1.25;font-weight:700;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:13px;max-width:72ch}
+  .sub code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#EDE9E5;padding:1px 6px;border-radius:4px;font-size:11.5px;
+  }
+  .meta-line{
+    margin-top:8px;font-size:11.5px;color:var(--muted);
+    display:flex;flex-wrap:wrap;gap:8px 14px;
+  }
+  .grid{
+    display:grid;gap:10px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    margin:16px 0 14px;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 13px 12px;box-shadow:var(--shadow);min-width:0;
+  }
+  .card .k{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+  .card .v{
+    font-size:clamp(20px,6vw,26px);font-weight:700;letter-spacing:-.03em;
+    margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .card .v .u{font-size:.55em;font-weight:600;margin-left:2px}
+  .card .s{font-size:11px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums;word-break:break-word}
+  .up{color:var(--above)}
+  .down{color:var(--below)}
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;
+  }
+  .panel h2{
+    margin:0;padding:14px 14px 8px;font-size:14px;font-weight:700;
+    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+  }
+  .panel h2 .hint{font-size:11px;color:var(--muted);font-weight:500}
+  .chart-\boxed{padding:0 4px 8px;position:relative}
+  canvas{width:100%;height:300px;display:block;touch-action:pan-y}
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px 12px;padding:0 14px 12px;
+    font-size:11px;color:var(--muted);
+  }
+  .swatch{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+  .table-scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:520px}
+  table{
+    width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;
+    min-width:520px;
+  }
+  th,td{padding:8px 10px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+  th{
+    color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.03em;
+    background:#FBFAF8;position:sticky;top:0;z-index:1;
+  }
+  tbody tr:hover{background:#FBFAF8}
+  .tag{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;
+  }
+  .tag.above{background:var(--above-soft);color:var(--above)}
+  .tag.below{background:var(--below-soft);color:var(--below)}
+  .tag.on{background:rgba(29,78,216,.1);color:var(--accent)}
+  .note{
+    margin:8px 0 0;padding:13px 14px;border-radius:12px;
+    background:var(--warn-bg);border:1px solid var(--warn-line);
+    color:var(--warn-ink);font-size:12.5px;line-height:1.7;
+  }
+  footer{
+    margin-top:14px;color:var(--muted);font-size:11px;line-height:1.75;
+  }
+  .tooltip{
+    position:fixed;pointer-events:none;z-index:30;
+    background:rgba(28,25,23,.92);color:#FAFAF9;
+    padding:8px 10px;border-radius:8px;font-size:11px;line-height:1.55;
+    opacity:0;transition:opacity .12s;white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .status{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;color:var(--muted);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:#A8A29E}
+  .dot.live{background:#16A34A}
+  .loading{
+    padding:28px 16px;text-align:center;color:var(--muted);font-size:13px;
+  }
+  .error{
+    margin:12px 0;padding:12px 14px;border-radius:10px;
+    background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;font-size:12.5px;
+  }
+
+  @media (min-width:720px){
+    .wrap{padding:36px 20px 64px}
+    .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    canvas{height:360px}
+    .panel h2{padding:16px 18px 10px;font-size:15px}
+    .legend{padding:0 18px 14px;font-size:12px;gap:14px}
+    th,td{padding:9px 12px;font-size:12.5px}
+    table{min-width:0}
+  }
+  @media (max-width:719px){
+    .tables{display:block}
+    .tables .panel{margin-bottom:12px}
+  }
+  @media (min-width:900px){
+    .tables{display:grid;grid-template-columns:1.2fr .9fr;gap:16px}
+    .tables .panel{margin-bottom:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Annual MA Structure</div>
+    <h1>标普红利低波50 全收益 · 年线结构</h1>
+    <div class="sub">
+      指数：<strong>标普中国A股大盘红利低波50</strong>。
+      全收益序列以南方红利低波50ETF（<code>515450</code>）<strong>累计净值</strong>为代理（含分红，含费用与跟踪误差）。
+      年线 = <strong>250日均线</strong>。
+    </div>
+    <div class="meta-line" id="metaLine">
+      <span class="status"><i class="dot" id="liveDot"></i><span id="loadStatus">正在加载 data.json…</span></span>
+      <span id="spanText"></span>
+      <span id="updatedText"></span>
+    </div>
+    <div class="error" id="errorBox" hidden></div>
+  </header>
+
+  <section class="grid" id="stats"><div class="loading" style="grid-column:1/-1">加载中…</div></section>
+
+  <section class="panel">
+    <h2>价格 vs 年线（250日）<span class="hint">色带：年线上 / 年线下 · 点按/悬停查看当日</span></h2>
+    <div class="chart-box"><canvas id="chart"></canvas></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:#1C1917"></i>全收益（累计净值）</span>
+      <span><i class="swatch" style="background:#A8A29E"></i>250日年线</span>
+      <span><i class="swatch" style="background:rgba(194,65,12,.35)"></i>年线上</span>
+      <span><i class="swatch" style="background:rgba(15,118,110,.35)"></i>年线下</span>
+      <span>偏离 = 价格 / 年线 − 1</span>
+    </div>
+  </section>
+
+  <div class="tables">
+    <section class="panel">
+      <h2>连续位于年线上/下 <span class="hint">已滤短噪声（交易日 &lt; 5 且 |偏离| &lt; 2%）· <span id="nper">—</span> / <span id="nperAll">—</span> 段</span></h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>位置</th><th>起</th><th>止</th><th>交易日</th><th>自然日</th>
+              <th>偏离区间</th>
+            </tr>
+          </thead>
+          <tbody id="perBody"><tr><td colspan="6">加载中…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>最大套牢（创新高前水下段）<span class="hint">自然日 ≥ 60 · <span id="nuw">—</span> / <span id="nuwAll">—</span> 段</span></h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>阶段高点</th><th>见底</th><th>解套</th><th>自然日</th><th>交易日</th><th>最大回撤</th>
+            </tr>
+          </thead>
+          <tbody id="uwBody"><tr><td colspan="6">加载中…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="note" id="note">加载中…</div>
+
+  <footer>
+    口径说明：①「年线」按 A 股习惯取 250 个交易日简单均线；②「连续在年线上/下」以收盘价相对年线的上下位置划分，数据起点为年线就绪日；
+    ③「最大套牢」= 自阶段高点起，价格回落且直至再创该高点之前的持续时间（含回撤深度）；
+    ④ 数据每日由 GitHub Actions 自动更新，仅作历史结构观察，不构成投资建议。<br />
+    仓库：<code>ETF-515450</code> ｜ 数据文件：<code>data.json</code>
+  </footer>
+</div>
+<div class="tooltip" id="tip"></div>
+
+<script>
+(function () {
+  const tip = document.getElementById('tip');
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  let DATA = null;
+  let hoverIdx = null;
+
+  function $(id) { return document.getElementById(id); }
+
+  function showError(msg) {
+    const box = $('errorBox');
+    box.hidden = false;
+    box.textContent = msg;
+    $('loadStatus').textContent = '加载失败';
+    $('liveDot').classList.remove('live');
+    $('stats').innerHTML = '';
+    $('note').textContent = '数据加载失败，请稍后刷新或检查 data.json 是否已生成。';
+    $('perBody').innerHTML = '<tr><td colspan="6">—</td></tr>';
+    $('uwBody').innerHTML = '<tr><td colspan="6">—</td></tr>';
+  }
+
+  function fmtSigned(n, digits) {
+    if (n == null || isNaN(n)) return '—';
+    return (n >= 0 ? '+' : '') + n.toFixed(digits == null ? 2 : digits) + '%';
+  }
+
+  function renderStats(st) {
+    const s = st.current;
+    const html = `
+      <div class="card">
+        <div class="k">当前 vs 年线</div>
+        <div class="v ${s.bias >= 0 ? 'up' : 'down'}">${fmtSigned(s.bias)}</div>
+        <div class="s">${s.date} ｜ ${s.bias >= 0 ? '年线上' : '年线下'}</div>
+      </div>
+      <div class="card">
+        <div class="k">最长连续年线上</div>
+        <div class="v up">${st.max_above.days}<span class="u">交易日</span></div>
+        <div class="s">${st.max_above.start || '—'} → ${st.max_above.end || '—'}</div>
+      </div>
+      <div class="card">
+        <div class="k">最长连续年线下</div>
+        <div class="v down">${st.max_below.days}<span class="u">交易日</span></div>
+        <div class="s">${st.max_below.start || '—'} → ${st.max_below.end || '—'}</div>
+      </div>
+      <div class="card">
+        <div class="k">最大套牢时间</div>
+        <div class="v">${st.max_underwater.cal_days}<span class="u">自然日</span></div>
+        <div class="s">${st.max_underwater.peak_date} 高点 → ${st.max_underwater.end || '进行中'} ${st.max_underwater.end ? '解套' : ''}</div>
+      </div>
+      <div class="card">
+        <div class="k">最大正偏离（年线上）</div>
+        <div class="v up">${fmtSigned(st.max_pos_bias.b)}</div>
+        <div class="s">${st.max_pos_bias.d} ｜ 价格 ${Number(st.max_pos_bias.p).toFixed(4)}</div>
+      </div>
+      <div class="card">
+        <div class="k">最大负偏离（年线下）</div>
+        <div class="v down">${fmtSigned(st.max_neg_bias.b)}</div>
+        <div class="s">${st.max_neg_bias.d} ｜ 价格 ${Number(st.max_neg_bias.p).toFixed(4)}</div>
+      </div>
+      <div class="card">
+        <div class="k">年线上占比</div>
+        <div class="v">${st.totals.above_share}%</div>
+        <div class="s">交易日 上 ${st.totals.above_days} / 下 ${st.totals.below_days}</div>
+      </div>
+      <div class="card">
+        <div class="k">最深回撤（同段）</div>
+        <div class="v down">${st.max_underwater.max_dd}%</div>
+        <div class="s">${st.max_underwater.min_date} 低点 ${Number(st.max_underwater.min_px).toFixed(4)}</div>
+      </div>
+    `;
+    $('stats').innerHTML = html;
+  }
+
+  function renderTables(data) {
+    $('nper').textContent = data.periods.length;
+    $('nperAll').textContent = data.all_periods_count;
+    $('nuw').textContent = data.underwater.length;
+    $('nuwAll').textContent = data.underwater_all_count;
+
+    $('perBody').innerHTML = data.periods.map((p) => {
+      const tag = p.side === 'above'
+        ? '<span class="tag above">年线上</span>'
+        : '<span class="tag below">年线下</span>';
+      const on = p.ongoing ? ' <span class="tag on">进行中</span>' : '';
+      const bias = `${fmtSigned(p.min_bias)} ~ ${fmtSigned(p.max_bias)}`;
+      return `<tr>
+        <td>${tag}${on}</td>
+        <td>${p.start}</td>
+        <td>${p.ongoing ? '—' : p.end}</td>
+        <td>${p.days}</td>
+        <td>${p.calendar_days}</td>
+        <td>${bias}</td>
+      </tr>`;
+    }).join('');
+
+    $('uwBody').innerHTML = data.underwater.map((u) => `<tr>
+      <td>${u.peak_date}</td>
+      <td>${u.min_date}</td>
+      <td>${u.ongoing ? '—' : (u.end || '—')}</td>
+      <td>${u.cal_days}</td>
+      <td>${u.trade_days}</td>
+      <td class="down">${u.max_dd}%</td>
+    </tr>`).join('');
+  }
+
+  function renderNote(data) {
+    const st = data.stats;
+    $('note').innerHTML = `
+      <strong>一段话结论：</strong>
+      自 ${data.meta.start} 以来，价格在年线之上的时间占约 ${st.totals.above_share}%，
+      最长连续在线上 <strong>${st.max_above.days}</strong> 个交易日（${st.max_above.start} ~ ${st.max_above.end}，约 ${st.max_above.calendar_days} 个自然日）；
+      最长连续在线下仅 <strong>${st.max_below.days}</strong> 个交易日（${st.max_below.start} ~ ${st.max_below.end}）。
+      偏离幅度上，最高冲到年线上方 <strong>${fmtSigned(st.max_pos_bias.b)}</strong>（${st.max_pos_bias.d}），
+      最深跌到年线下方 <strong>${fmtSigned(st.max_neg_bias.b)}</strong>（${st.max_neg_bias.d}）。
+      若在阶段高点买入，最长需要等 <strong>${st.max_underwater.cal_days}</strong> 个自然日（${st.max_underwater.trade_days} 个交易日）才解套
+      （${st.max_underwater.peak_date} → ${st.max_underwater.end || '进行中'}，期间最大回撤约 ${st.max_underwater.max_dd}%）。
+    `;
+  }
+
+  function draw() {
+    if (!DATA || !DATA.series || !DATA.series.length) return;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.clientWidth || 600;
+    const cssH = canvas.clientHeight || 300;
+    canvas.width = Math.max(1, Math.floor(cssW * dpr));
+    canvas.height = Math.max(1, Math.floor(cssH * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const padL = 46, padR = 10, padT = 14, padB = 30;
+    const w = cssW - padL - padR;
+    const h = cssH - padT - padB;
+    const P = DATA.series.map((r) => r.p);
+    const MA = DATA.series.map((r) => r.ma);
+    const D = DATA.series.map((r) => r.d);
+    const n = P.length;
+
+    let min = Infinity, max = -Infinity;
+    for (let i = 0; i < n; i++) {
+      const v = P[i];
+      const m = MA[i];
+      if (v < min) min = v;
+      if (v > max) max = v;
+      if (m != null) {
+        if (m < min) min = m;
+        if (m > max) max = m;
+      }
+    }
+    const pad = (max - min) * 0.08 || 1;
+    min -= pad; max += pad;
+
+    const x = (i) => padL + (n <= 1 ? 0 : (i / (n - 1)) * w);
+    const y = (v) => padT + (1 - (v - min) / (max - min)) * h;
+
+    const dateToIdx = {};
+    for (let i = 0; i < n; i++) dateToIdx[D[i]] = i;
+    (DATA.periods || []).forEach((p) => {
+      const a = dateToIdx[p.start];
+      const b = p.ongoing ? n - 1 : dateToIdx[p.end];
+      if (a == null || b == null || b < a) return;
+      ctx.fillStyle = p.side === 'above' ? 'rgba(194,65,12,.10)' : 'rgba(15,118,110,.10)';
+      const bw = Math.max(1, w / n);
+      ctx.fillRect(x(a), padT, x(b) - x(a) + bw, h);
+    });
+
+    ctx.strokeStyle = '#E7E5E4';
+    ctx.lineWidth = 1;
+    ctx.font = '10px -apple-system, PingFang SC, sans-serif';
+    ctx.fillStyle = '#A8A29E';
+    const ticks = 4;
+    for (let t = 0; t <= ticks; t++) {
+      const v = min + (max - min) * (t / ticks);
+      const yy = y(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, yy);
+      ctx.lineTo(padL + w, yy);
+      ctx.stroke();
+      ctx.fillText(v.toFixed(2), 6, yy + 3);
+    }
+
+    const labN = cssW < 480 ? 4 : 6;
+    for (let t = 0; t < labN; t++) {
+      const i = Math.round((t * (n - 1)) / (labN - 1));
+      const label = D[i].slice(2, 7);
+      ctx.fillText(label, x(i) - 14, cssH - 10);
+    }
+
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < n; i++) {
+      const m = MA[i];
+      if (m == null) { started = false; continue; }
+      const xx = x(i), yy = y(m);
+      if (!started) { ctx.moveTo(xx, yy); started = true; }
+      else ctx.lineTo(xx, yy);
+    }
+    ctx.strokeStyle = '#A8A29E';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const xx = x(i), yy = y(P[i]);
+      if (i === 0) ctx.moveTo(xx, yy);
+      else ctx.lineTo(xx, yy);
+    }
+    ctx.strokeStyle = '#1C1917';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    if (hoverIdx != null && hoverIdx >= 0 && hoverIdx < n) {
+      const xx = x(hoverIdx);
+      ctx.strokeStyle = 'rgba(28,25,23,.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(xx, padT);
+      ctx.lineTo(xx, padT + h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(xx, y(P[hoverIdx]), 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#1C1917';
+      ctx.fill();
+    }
+  }
+
+  function idxFromEvent(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const cssW = canvas.clientWidth;
+    const padL = 46, padR = 10;
+    const w = cssW - padL - padR;
+    const clientX = ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX;
+    const rel = clientX - rect.left - padL;
+    const n = DATA.series.length;
+    let idx = Math.round((rel / w) * (n - 1));
+    return Math.max(0, Math.min(n - 1, idx));
+  }
+
+  function showTip(ev, idx) {
+    const r = DATA.series[idx];
+    tip.innerHTML = `
+      <div><strong>${r.d}</strong></div>
+      <div>价格 ${Number(r.p).toFixed(4)}</div>
+      <div>年线 ${r.ma == null ? '—' : Number(r.ma).toFixed(4)}</div>
+      <div>偏离 ${r.b == null ? '—' : fmtSigned(r.b)}</div>
+    `;
+    tip.style.opacity = 1;
+    const clientX = ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX;
+    const clientY = ev.touches && ev.touches[0] ? ev.touches[0].clientY : ev.clientY;
+    tip.style.left = Math.min(window.innerWidth - 150, clientX + 12) + 'px';
+    tip.style.top = Math.max(8, clientY - 52) + 'px';
+  }
+
+  canvas.addEventListener('mousemove', (ev) => {
+    if (!DATA) return;
+    hoverIdx = idxFromEvent(ev);
+    draw();
+    showTip(ev, hoverIdx);
+  });
+  canvas.addEventListener('mouseleave', () => {
+    hoverIdx = null;
+    tip.style.opacity = 0;
+    draw();
+  });
+  canvas.addEventListener('touchstart', (ev) => {
+    if (!DATA) return;
+    hoverIdx = idxFromEvent(ev);
+    draw();
+    showTip(ev, hoverIdx);
+  }, { passive: true });
+  canvas.addEventListener('touchmove', (ev) => {
+    if (!DATA) return;
+    hoverIdx = idxFromEvent(ev);
+    draw();
+    showTip(ev, hoverIdx);
+  }, { passive: true });
+  window.addEventListener('resize', () => draw());
+
+  async function boot() {
+    try {
+      const res = await fetch('./data.json?ts=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      DATA = await res.json();
+      $('liveDot').classList.add('live');
+      $('loadStatus').textContent = '数据已加载';
+      $('spanText').textContent = `区间 ${DATA.meta.start} → ${DATA.meta.end}，共 ${DATA.meta.n} 个日频点`;
+      $('updatedText').textContent = `更新于 ${DATA.meta.updated_at}`;
+      renderStats(DATA.stats);
+      renderTables(DATA);
+      renderNote(DATA);
+      draw();
+    } catch (err) {
+      console.error(err);
+      showError('无法加载 data.json：' + (err && err.message ? err.message : err));
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
