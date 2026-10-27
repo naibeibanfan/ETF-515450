@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.DS_Store
+# local fetch caches
+scripts/_price_cache.json
+scripts/_holdings_cache.json
+# scratch / screenshots
+*.png
+scripts/_match*.py
+scripts/_probe*.py
+scripts/_parse_*.py
+scripts/_upload_*.py
+data/holdings_*.html
