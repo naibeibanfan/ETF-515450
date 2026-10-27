@@ -24,7 +24,7 @@
     --radius:14px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
     background:var(--bg);
@@ -57,6 +57,14 @@
   .card{
     background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     padding:13px 13px 12px;box-shadow:var(--shadow);min-width:0;
+    cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;
+    user-select:none;-webkit-tap-highlight-color:transparent;
+  }
+  .card:hover{transform:translateY(-1px);border-color:#D6D3D1}
+  .card:active{transform:translateY(0) scale(.99)}
+  .card.active{
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px rgba(29,78,216,.18),var(--shadow);
   }
   .card .k{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.02em}
   .card .v{
@@ -85,15 +93,44 @@
   .swatch{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
   .table-scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:520px}
   table{
-    width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;
-    min-width:520px;
+    width:auto;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;
   }
-  th,td{padding:8px 10px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+  th,td{padding:8px 6px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{width:1%;white-space:nowrap}
   th{
     color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.03em;
     background:#FBFAF8;position:sticky;top:0;z-index:1;
   }
   tbody tr:hover{background:#FBFAF8}
+
+  /* iPhone / narrow: force card rows, never horizontal scroll */
+  @media (max-width: 719px){
+    .wrap{padding:16px 10px 36px}
+    .panel{border-radius:12px}
+    .panel h2{padding:12px 12px 6px;font-size:13px}
+    .table-scroll{
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .card{padding:11px 11px 10px}
+    .card .v{font-size:20px;white-space:normal;word-break:break-word}
+    .card .s{font-size:10.5px}
+    .hold-grid{padding:0 10px 8px}
+    .hold-group-title{padding:10px 12px 6px}
+    .hold-card{padding:11px 12px}
+    .hold-card .v{font-size:22px;white-space:normal}
+    .hold-card .row{
+      flex-wrap:wrap;
+      gap:2px 10px;
+    }
+    .hold-card .row span{flex:1 1 40%}
+    .hold-card .row strong{flex:1 1 55%;white-space:normal}
+    .hold-note,.hold-foot{margin-left:10px;margin-right:10px}
+    .legend{padding:0 12px 10px;font-size:10.5px}
+    canvas{height:260px}
+    #chartYield{height:220px}
+    .grid{gap:8px;margin:12px 0 10px}
+  }
   .tag{
     display:inline-flex;align-items:center;gap:4px;
     padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;
@@ -105,6 +142,45 @@
     margin:8px 0 0;padding:13px 14px;border-radius:12px;
     background:var(--warn-bg);border:1px solid var(--warn-line);
     color:var(--warn-ink);font-size:12.5px;line-height:1.7;
+  }
+  .hold-grid{
+    display:grid;gap:10px;grid-template-columns:1fr;padding:0 14px 8px;
+  }
+  .hold-group{margin-bottom:10px}
+  .hold-group-title{
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;
+    padding:10px 14px 6px;font-size:13px;
+  }
+  .hold-group-title span{font-size:11px;color:var(--muted)}
+  .hold-card{
+    border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#FBFAF8;
+    min-width:0;
+  }
+  .hold-card.accent{
+    background:rgba(15,118,110,.08);border-color:rgba(15,118,110,.28);
+  }
+  .hold-card .k{font-size:11px;color:var(--muted);font-weight:600}
+  .hold-card .v{
+    font-size:22px;font-weight:700;letter-spacing:-.03em;margin:4px 0 2px;
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .hold-card .s{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hold-card .row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    font-size:12px;padding:3px 0;border-top:1px dashed var(--line);
+  }
+  .hold-card .row span{color:var(--muted);white-space:nowrap}
+  .hold-card .row strong{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .hold-note{
+    margin:4px 14px 10px;padding:11px 12px;border-radius:10px;
+    background:#EFF6FF;border:1px solid #BFDBFE;color:#1E3A8A;font-size:12px;line-height:1.7;
+  }
+  .hold-foot{
+    margin:0 14px 14px;font-size:11px;color:var(--muted);line-height:1.7;
+  }
+  @media (min-width:720px){
+    .hold-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .hold-card .v{font-size:26px}
   }
   footer{
     margin-top:14px;color:var(--muted);font-size:11px;line-height:1.75;
@@ -137,7 +213,7 @@
     .panel h2{padding:16px 18px 10px;font-size:15px}
     .legend{padding:0 18px 14px;font-size:12px;gap:14px}
     th,td{padding:9px 12px;font-size:12.5px}
-    table{min-width:0}
+    table{min-width:0;width:100%}
   }
   @media (max-width:719px){
     .tables{display:block}
@@ -167,6 +243,8 @@
     <div class="error" id="errorBox" hidden></div>
   </header>
 
+  <section class="grid" id="thermoWrap" style="margin-bottom:4px"></section>
+
   <section class="grid" id="stats"><div class="loading" style="grid-column:1/-1">加载中…</div></section>
 
   <section class="panel">
@@ -181,6 +259,19 @@
     </div>
   </section>
 
+  <section class="panel">
+    <h2>股息率 · 国债利率 · 股债利差 <span class="hint">单位 % · 利差 = 股息率 − 10Y国债</span></h2>
+    <div class="grid" id="indStats" style="margin-top:0"></div>
+    <div class="chart-box"><canvas id="chartYield" style="height:260px"></canvas></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:#B45309"></i>股息率（Σ股利/Σ市值）</span>
+      <span><i class="swatch" style="background:#1D4ED8"></i>10Y 国债收益率</span>
+      <span><i class="swatch" style="background:#7C3AED"></i>股债利差</span>
+      <span><i class="swatch" style="background:rgba(124,58,237,.2)"></i>利差 &gt; 0</span>
+    </div>
+    <div class="hold-foot" id="indNote"></div>
+  </section>
+
   <div class="tables">
     <section class="panel">
       <h2>连续位于年线上/下 <span class="hint">已滤短噪声（交易日 &lt; 5 且 |偏离| &lt; 2%）· <span id="nper">—</span> / <span id="nperAll">—</span> 段</span></h2>
@@ -188,11 +279,10 @@
         <table>
           <thead>
             <tr>
-              <th>位置</th><th>起</th><th>止</th><th>交易日</th><th>自然日</th>
-              <th>偏离区间</th>
+              <th></th><th>起</th><th>止</th><th>自然日(交易日)</th><th>偏离区间</th>
             </tr>
           </thead>
-          <tbody id="perBody"><tr><td colspan="6">加载中…</td></tr></tbody>
+          <tbody id="perBody"><tr><td colspan="5">加载中…</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -203,21 +293,33 @@
         <table>
           <thead>
             <tr>
-              <th>阶段高点</th><th>见底</th><th>解套</th><th>自然日</th><th>交易日</th><th>最大回撤</th>
+              <th>阶段高点</th><th>见底</th><th>解套</th><th>自然日(交易日)</th><th>最大回撤</th>
             </tr>
           </thead>
-          <tbody id="uwBody"><tr><td colspan="6">加载中…</td></tr></tbody>
+          <tbody id="uwBody"><tr><td colspan="5">加载中…</td></tr></tbody>
         </table>
       </div>
     </section>
   </div>
 
+  <section class="panel" id="holdPanel">
+    <h2>持有期收益对比 <span class="hint">任意时点买入 vs 年线以下买入（1 年 / 3 年）</span></h2>
+    <div id="holdBody">
+      <div class="loading">加载中…</div>
+    </div>
+  </section>
+
   <div class="note" id="note">加载中…</div>
 
   <footer>
-    口径说明：①「年线」按 A 股习惯取 250 个交易日简单均线；②「连续在年线上/下」以收盘价相对年线的上下位置划分，数据起点为年线就绪日；
-    ③「最大套牢」= 自阶段高点起，价格回落且直至再创该高点之前的持续时间（含回撤深度）；
-    ④ 数据每日由 GitHub Actions 自动更新，仅作历史结构观察，不构成投资建议。<br />
+    口径说明：<br />
+    ① <strong>数据来源</strong>：天天基金网 <code>pingzhongdata</code> 中南方红利低波50ETF（<code>515450</code>）的<strong>累计净值</strong>日频序列（源数据为东方财富/托管方披露的基金净值）。以其作为「标普中国A股大盘红利低波50指数<strong>全收益</strong>」的代理：累计净值含分红与再投资，但仍含基金管理费、托管费与跟踪误差，故与指数官方全收益点位会有小幅差异。<br />
+    ② <strong>年线</strong>：250 个交易日简单均线（SMA250）。<br />
+    ③ <strong>连续在年线上/下</strong>：以收盘（累计净值）相对年线的上下位置划分；数据起点为年线就绪日；表格过滤「交易日 &lt; 5 且 |偏离| &lt; 2%」的短噪声。<br />
+    ④ <strong>最大套牢</strong>：自阶段高点起，价格回落且直至再创该高点之前的持续时间（含回撤深度）。<br />
+    ⑤ <strong>持有期收益</strong>：滚动 250 / 750 个交易日近似 1 / 3 年；买点分别取全部交易日、年线下交易日、年线上交易日；收益为累计净值区间涨跌幅。<br />
+    ⑥ <strong>股息率</strong>：成分股近12月现金股利和 ÷ 指数总市值 = Σ(TTM税前每股分红 × 总股本) ÷ Σ(股价 × 总股本)。不是个股权重×股息率加权。TTM 现金分红按除息日（EX_DIVIDEND_DATE）落入近 365 天、税前、剔除未实施预案（东方财富分红送配）；成分取基金中报/年报完整持仓；股本取当前总股本近似。每个历史点位均按当时股价与当时近12月分红重算。不用 ETF 净值差倒推。<br />
+    ⑥ 数据由 GitHub Actions 交易日定时更新，仅作历史结构观察，不构成投资建议。<br />
     仓库：<code>ETF-515450</code> ｜ 数据文件：<code>data.json</code>
   </footer>
 </div>
@@ -228,8 +330,11 @@
   const tip = document.getElementById('tip');
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
+  const yCanvas = document.getElementById('chartYield');
   let DATA = null;
   let hoverIdx = null;
+  let activeKey = null;
+  let activeRanges = null;
 
   function $(id) { return document.getElementById(id); }
 
@@ -241,8 +346,8 @@
     $('liveDot').classList.remove('live');
     $('stats').innerHTML = '';
     $('note').textContent = '数据加载失败，请稍后刷新或检查 data.json 是否已生成。';
-    $('perBody').innerHTML = '<tr><td colspan="6">—</td></tr>';
-    $('uwBody').innerHTML = '<tr><td colspan="6">—</td></tr>';
+    $('perBody').innerHTML = '<tr><td colspan="5">—</td></tr>';
+    $('uwBody').innerHTML = '<tr><td colspan="5">—</td></tr>';
   }
 
   function fmtSigned(n, digits) {
@@ -253,48 +358,192 @@
   function renderStats(st) {
     const s = st.current;
     const html = `
-      <div class="card">
+      <div class="card" data-hl="current" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">当前 vs 年线</div>
         <div class="v ${s.bias >= 0 ? 'up' : 'down'}">${fmtSigned(s.bias)}</div>
         <div class="s">${s.date} ｜ ${s.bias >= 0 ? '年线上' : '年线下'}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_above" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最长连续年线上</div>
         <div class="v up">${st.max_above.days}<span class="u">交易日</span></div>
         <div class="s">${st.max_above.start || '—'} → ${st.max_above.end || '—'}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_below" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最长连续年线下</div>
         <div class="v down">${st.max_below.days}<span class="u">交易日</span></div>
         <div class="s">${st.max_below.start || '—'} → ${st.max_below.end || '—'}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_underwater" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最大套牢时间</div>
         <div class="v">${st.max_underwater.cal_days}<span class="u">自然日</span></div>
         <div class="s">${st.max_underwater.peak_date} 高点 → ${st.max_underwater.end || '进行中'} ${st.max_underwater.end ? '解套' : ''}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_pos_bias" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最大正偏离（年线上）</div>
         <div class="v up">${fmtSigned(st.max_pos_bias.b)}</div>
         <div class="s">${st.max_pos_bias.d} ｜ 价格 ${Number(st.max_pos_bias.p).toFixed(4)}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_neg_bias" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最大负偏离（年线下）</div>
         <div class="v down">${fmtSigned(st.max_neg_bias.b)}</div>
         <div class="s">${st.max_neg_bias.d} ｜ 价格 ${Number(st.max_neg_bias.p).toFixed(4)}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="above_share" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">年线上占比</div>
         <div class="v">${st.totals.above_share}%</div>
         <div class="s">交易日 上 ${st.totals.above_days} / 下 ${st.totals.below_days}</div>
       </div>
-      <div class="card">
+      <div class="card" data-hl="max_dd" role="button" tabindex="0" title="点击在图中高亮">
         <div class="k">最深回撤（同段）</div>
         <div class="v down">${st.max_underwater.max_dd}%</div>
         <div class="s">${st.max_underwater.min_date} 低点 ${Number(st.max_underwater.min_px).toFixed(4)}</div>
       </div>
     `;
     $('stats').innerHTML = html;
+
+    const cards = $('stats').querySelectorAll('.card[data-hl]');
+    cards.forEach((el) => {
+      const activate = () => toggleHighlight(el.getAttribute('data-hl'));
+      el.addEventListener('click', activate);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          activate();
+        }
+      });
+    });
+  }
+
+  function findIndexByDate(dates, d, mode) {
+    if (!d) return -1;
+    if (mode === 'exact') {
+      return dates.indexOf(d);
+    }
+    if (mode === 'lte') {
+      // last index with date <= d
+      for (let i = dates.length - 1; i >= 0; i--) {
+        if (dates[i] <= d) return i;
+      }
+      return 0;
+    }
+    // first index with date >= d
+    for (let i = 0; i < dates.length; i++) {
+      if (dates[i] >= d) return i;
+    }
+    return dates.length - 1;
+  }
+
+  function buildHighlightRanges(key) {
+    if (!DATA) return null;
+    const dates = DATA.series.map((r) => r.d);
+    const hl = (DATA.highlights && DATA.highlights[key]) || null;
+
+    if (hl && hl.mode === 'multi') {
+      return (hl.ranges || []).map((r) => ({
+        start: findIndexByDate(dates, r.start, 'gte'),
+        end: findIndexByDate(dates, r.end, 'lte'),
+        side: hl.side || 'above',
+        label: hl.label,
+      })).filter((r) => r.start >= 0 && r.end >= r.start);
+    }
+
+    if (hl && hl.mode === 'range') {
+      return [{
+        start: findIndexByDate(dates, hl.start, 'gte'),
+        end: findIndexByDate(dates, hl.end, 'lte'),
+        side: hl.side || (key === 'max_above' || key === 'max_pos_bias' || key === 'above_share' ? 'above' : 'below'),
+        label: hl.label,
+        focus: hl.focus ? findIndexByDate(dates, hl.focus, 'exact') : -1,
+      }].filter((r) => r.start >= 0 && r.end >= r.start);
+    }
+
+    // fallbacks from stats
+    const st = DATA.stats;
+    const map = {
+      current: {
+        start: findIndexByDate(dates, dates[Math.max(0, dates.length - 60)], 'gte'),
+        end: dates.length - 1,
+        side: st.current.side,
+        label: '当前 vs 年线',
+        focus: dates.length - 1,
+      },
+      max_above: {
+        start: findIndexByDate(dates, st.max_above.start, 'gte'),
+        end: findIndexByDate(dates, st.max_above.end, 'lte'),
+        side: 'above',
+        label: '最长连续年线上',
+      },
+      max_below: {
+        start: findIndexByDate(dates, st.max_below.start, 'gte'),
+        end: findIndexByDate(dates, st.max_below.end, 'lte'),
+        side: 'below',
+        label: '最长连续年线下',
+      },
+      max_underwater: {
+        start: findIndexByDate(dates, st.max_underwater.peak_date, 'gte'),
+        end: findIndexByDate(dates, st.max_underwater.end || dates[dates.length - 1], 'lte'),
+        side: 'below',
+        label: '最大套牢时间',
+        focus: findIndexByDate(dates, st.max_underwater.min_date, 'exact'),
+      },
+      max_pos_bias: {
+        start: findIndexByDate(dates, st.max_pos_bias.d, 'gte'),
+        end: findIndexByDate(dates, st.max_pos_bias.d, 'lte'),
+        side: 'above',
+        label: '最大正偏离',
+        focus: findIndexByDate(dates, st.max_pos_bias.d, 'exact'),
+      },
+      max_neg_bias: {
+        start: findIndexByDate(dates, st.max_neg_bias.d, 'gte'),
+        end: findIndexByDate(dates, st.max_neg_bias.d, 'lte'),
+        side: 'below',
+        label: '最大负偏离',
+        focus: findIndexByDate(dates, st.max_neg_bias.d, 'exact'),
+      },
+      above_share: {
+        ranges: (DATA.periods || []).filter((p) => p.side === 'above').map((p) => ({
+          start: findIndexByDate(dates, p.start, 'gte'),
+          end: findIndexByDate(dates, p.end, 'lte'),
+          side: 'above',
+          label: '年线上占比',
+        })),
+        mode: 'multi',
+      },
+      max_dd: {
+        start: findIndexByDate(dates, st.max_underwater.peak_date, 'gte'),
+        end: findIndexByDate(dates, st.max_underwater.end || dates[dates.length - 1], 'lte'),
+        side: 'below',
+        label: '最深回撤',
+        focus: findIndexByDate(dates, st.max_underwater.min_date, 'exact'),
+      },
+    };
+
+    const item = map[key];
+    if (!item) return null;
+    if (item.mode === 'multi') return item.ranges.filter((r) => r.start >= 0 && r.end >= r.start);
+    return [item].filter((r) => r.start >= 0 && r.end >= r.start);
+  }
+
+  function toggleHighlight(key) {
+    const cards = $('stats').querySelectorAll('.card[data-hl]');
+    if (activeKey === key) {
+      activeKey = null;
+      activeRanges = null;
+      cards.forEach((c) => c.classList.remove('active'));
+    } else {
+      activeKey = key;
+      activeRanges = buildHighlightRanges(key);
+      cards.forEach((c) => {
+        c.classList.toggle('active', c.getAttribute('data-hl') === key);
+      });
+    }
+    draw();
+  }
+
+  function shortDate(d) {
+    if (!d) return '—';
+    // 2024-09-23 -> 24-09-23
+    return d.length >= 10 ? d.slice(2) : d;
   }
 
   function renderTables(data) {
@@ -305,27 +554,25 @@
 
     $('perBody').innerHTML = data.periods.map((p) => {
       const tag = p.side === 'above'
-        ? '<span class="tag above">年线上</span>'
-        : '<span class="tag below">年线下</span>';
-      const on = p.ongoing ? ' <span class="tag on">进行中</span>' : '';
+        ? '<span class="tag above">上</span>'
+        : '<span class="tag below">下</span>';
       const bias = `${fmtSigned(p.min_bias)} ~ ${fmtSigned(p.max_bias)}`;
       return `<tr>
-        <td>${tag}${on}</td>
-        <td>${p.start}</td>
-        <td>${p.ongoing ? '—' : p.end}</td>
-        <td>${p.days}</td>
-        <td>${p.calendar_days}</td>
-        <td>${bias}</td>
+        <td class="cell-wide">${tag}</td>
+        <td data-label="起">${shortDate(p.start)}</td>
+        <td data-label="止">${p.ongoing ? '进行中' : shortDate(p.end)}</td>
+        <td>${p.calendar_days}(${p.days})</td>
+        <td class="cell-wide" data-label="偏离区间">${bias}</td>
       </tr>`;
     }).join('');
 
-    $('uwBody').innerHTML = data.underwater.map((u) => `<tr>
-      <td>${u.peak_date}</td>
-      <td>${u.min_date}</td>
-      <td>${u.ongoing ? '—' : (u.end || '—')}</td>
-      <td>${u.cal_days}</td>
-      <td>${u.trade_days}</td>
-      <td class="down">${u.max_dd}%</td>
+    const uwSorted = [...data.underwater].sort((a, b) => (a.peak_date || '').localeCompare(b.peak_date || ''));
+    $('uwBody').innerHTML = uwSorted.map((u) => `<tr>
+      <td data-label="阶段高点">${shortDate(u.peak_date)}</td>
+      <td data-label="见底">${shortDate(u.min_date)}</td>
+      <td data-label="解套">${u.ongoing ? '—' : shortDate(u.end || '—')}</td>
+      <td>${u.cal_days}(${u.trade_days})</td>
+      <td class="cell-wide" data-label="最大回撤"><strong class="down">${u.max_dd}%</strong></td>
     </tr>`).join('');
   }
 
@@ -341,6 +588,17 @@
       若在阶段高点买入，最长需要等 <strong>${st.max_underwater.cal_days}</strong> 个自然日（${st.max_underwater.trade_days} 个交易日）才解套
       （${st.max_underwater.peak_date} → ${st.max_underwater.end || '进行中'}，期间最大回撤约 ${st.max_underwater.max_dd}%）。
     `;
+  }
+
+  function drawSmoothCurve(ctx, pts) {
+    if (pts.length < 2) return;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length - 1; i++) {
+      const xc = (pts[i][0] + pts[i + 1][0]) / 2;
+      const yc = (pts[i][1] + pts[i + 1][1]) / 2;
+      ctx.quadraticCurveTo(pts[i][0], pts[i][1], xc, yc);
+    }
+    ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
   }
 
   function draw() {
@@ -388,6 +646,31 @@
       ctx.fillRect(x(a), padT, x(b) - x(a) + bw, h);
     });
 
+    // active card highlight ranges
+    if (activeRanges && activeRanges.length) {
+      const bw = Math.max(1, w / n);
+      activeRanges.forEach((r) => {
+        const a = Math.max(0, r.start);
+        const b = Math.min(n - 1, r.end);
+        if (b < a) return;
+        ctx.fillStyle = r.side === 'above' ? 'rgba(194,65,12,.22)' : 'rgba(15,118,110,.22)';
+        ctx.fillRect(x(a), padT, x(b) - x(a) + bw, h);
+        ctx.strokeStyle = r.side === 'above' ? 'rgba(194,65,12,.85)' : 'rgba(15,118,110,.85)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x(a), padT + 1, x(b) - x(a) + bw, h - 2);
+        if (r.focus != null && r.focus >= 0 && r.focus < n) {
+          const fx = x(r.focus);
+          ctx.beginPath();
+          ctx.arc(fx, y(P[r.focus]), 5, 0, Math.PI * 2);
+          ctx.fillStyle = r.side === 'above' ? '#C2410C' : '#0F766E';
+          ctx.fill();
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      });
+    }
+
     ctx.strokeStyle = '#E7E5E4';
     ctx.lineWidth = 1;
     ctx.font = '10px -apple-system, PingFang SC, sans-serif';
@@ -411,24 +694,28 @@
     }
 
     ctx.beginPath();
-    let started = false;
+    let seg = [];
+    const flushMA = () => {
+      if (seg.length >= 2) drawSmoothCurve(ctx, seg);
+      else if (seg.length === 1) ctx.lineTo(seg[0][0], seg[0][1]);
+      seg = [];
+    };
     for (let i = 0; i < n; i++) {
       const m = MA[i];
-      if (m == null) { started = false; continue; }
-      const xx = x(i), yy = y(m);
-      if (!started) { ctx.moveTo(xx, yy); started = true; }
-      else ctx.lineTo(xx, yy);
+      if (m == null) { flushMA(); continue; }
+      seg.push([x(i), y(m)]);
     }
+    flushMA();
     ctx.strokeStyle = '#A8A29E';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
     ctx.beginPath();
+    const pts = [];
     for (let i = 0; i < n; i++) {
-      const xx = x(i), yy = y(P[i]);
-      if (i === 0) ctx.moveTo(xx, yy);
-      else ctx.lineTo(xx, yy);
+      pts.push([x(i), y(P[i])]);
     }
+    drawSmoothCurve(ctx, pts);
     ctx.strokeStyle = '#1C1917';
     ctx.lineWidth = 1.6;
     ctx.stroke();
@@ -446,6 +733,8 @@
       ctx.fillStyle = '#1C1917';
       ctx.fill();
     }
+
+    if (typeof drawYield === 'function') drawYield();
   }
 
   function idxFromEvent(ev) {
@@ -475,30 +764,447 @@
     tip.style.top = Math.max(8, clientY - 52) + 'px';
   }
 
+  let tipTimer = null;
+  function hideTipLater(ms) {
+    if (tipTimer) clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => {
+      tip.style.opacity = 0;
+      hoverIdx = null;
+      draw();
+      drawYield();
+    }, ms == null ? 1800 : ms);
+  }
+  function hideTipNow() {
+    if (tipTimer) clearTimeout(tipTimer);
+    tipTimer = null;
+    tip.style.opacity = 0;
+    hoverIdx = null;
+    draw();
+    drawYield();
+  }
+
   canvas.addEventListener('mousemove', (ev) => {
     if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
     hoverIdx = idxFromEvent(ev);
     draw();
+    drawYield();
     showTip(ev, hoverIdx);
   });
   canvas.addEventListener('mouseleave', () => {
-    hoverIdx = null;
-    tip.style.opacity = 0;
-    draw();
+    hideTipNow();
   });
   canvas.addEventListener('touchstart', (ev) => {
     if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
     hoverIdx = idxFromEvent(ev);
     draw();
+    drawYield();
     showTip(ev, hoverIdx);
+    hideTipLater(2200);
   }, { passive: true });
   canvas.addEventListener('touchmove', (ev) => {
     if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
     hoverIdx = idxFromEvent(ev);
     draw();
+    drawYield();
     showTip(ev, hoverIdx);
+    hideTipLater(2200);
   }, { passive: true });
-  window.addEventListener('resize', () => draw());
+  canvas.addEventListener('touchend', () => {
+    hideTipLater(1200);
+  }, { passive: true });
+  canvas.addEventListener('touchcancel', () => {
+    hideTipNow();
+  }, { passive: true });
+
+  // 股债利差图悬浮
+  function yIdxFromEvent(ev) {
+    const rect = yCanvas.getBoundingClientRect();
+    const cssW = yCanvas.clientWidth || 600;
+    const dpr = window.devicePixelRatio || 1;
+    const padL = 46, padR = 10;
+    const w = cssW - padL - padR;
+    const clientX = ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX;
+    const rel = clientX - rect.left - padL;
+    const n = DATA.series.length;
+    let idx = Math.round((rel / w) * (n - 1));
+    return Math.max(0, Math.min(n - 1, idx));
+  }
+  function showYieldTip(ev, idx) {
+    const r = DATA.series[idx];
+    tip.innerHTML = `
+      <div><strong>${r.d}</strong></div>
+      <div>股息率 ${r.dy == null ? '—' : Number(r.dy).toFixed(2) + '%'}</div>
+      <div>10Y 国债 ${r.y10 == null ? '—' : Number(r.y10).toFixed(2) + '%'}</div>
+      <div>股债利差 ${r.sp == null ? '—' : fmtSigned(r.sp)}</div>
+    `;
+    tip.style.opacity = 1;
+    const clientX = ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX;
+    const clientY = ev.touches && ev.touches[0] ? ev.touches[0].clientY : ev.clientY;
+    tip.style.left = Math.min(window.innerWidth - 150, clientX + 12) + 'px';
+    tip.style.top = Math.max(8, clientY - 52) + 'px';
+  }
+  yCanvas.addEventListener('mousemove', (ev) => {
+    if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
+    hoverIdx = yIdxFromEvent(ev);
+    draw();
+    drawYield();
+    showYieldTip(ev, hoverIdx);
+  });
+  yCanvas.addEventListener('mouseleave', () => {
+    hideTipNow();
+  });
+  yCanvas.addEventListener('touchstart', (ev) => {
+    if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
+    hoverIdx = yIdxFromEvent(ev);
+    draw();
+    drawYield();
+    showYieldTip(ev, hoverIdx);
+    hideTipLater(2200);
+  }, { passive: true });
+  yCanvas.addEventListener('touchmove', (ev) => {
+    if (!DATA) return;
+    if (tipTimer) clearTimeout(tipTimer);
+    hoverIdx = yIdxFromEvent(ev);
+    draw();
+    drawYield();
+    showYieldTip(ev, hoverIdx);
+    hideTipLater(2200);
+  }, { passive: true });
+  yCanvas.addEventListener('touchend', () => {
+    hideTipLater(1200);
+  }, { passive: true });
+  yCanvas.addEventListener('touchcancel', () => {
+    hideTipNow();
+  }, { passive: true });
+  window.addEventListener('resize', () => { draw(); drawYield(); });
+
+  function pctNum(v) {
+    if (v == null || isNaN(v)) return '—';
+    return Number(v).toFixed(2) + '%';
+  }
+
+  function renderHold(hs) {
+    if (!hs) return;
+    const el = document.getElementById('holdBody');
+    if (!el) return;
+
+    const windows = Array.isArray(hs.windows) && hs.windows.length
+      ? hs.windows
+      : [{
+          hold_days: hs.hold_days || 250,
+          label: '持有1年',
+          any: hs.any || {},
+          below_ma: hs.below_ma || {},
+          above_ma: hs.above_ma || {},
+          pair: hs.pair || {},
+        }];
+
+    const win = (v) => (Number(v) >= 0 ? 'up' : 'down');
+
+    function block(title, s, accent) {
+      return `
+        <div class="hold-card${accent ? ' accent' : ''}">
+          <div class="k">${title}</div>
+          <div class="v ${win(s.median)}">${fmtSigned(s.median)}</div>
+          <div class="s">中位数收益（主指标）</div>
+          <div class="row"><span>平均收益</span><strong class="${win(s.avg)}">${fmtSigned(s.avg)}</strong></div>
+          <div class="row"><span>胜率</span><strong>${pctNum(s.win_rate)}</strong></div>
+          <div class="row"><span>最差</span><strong class="down">${fmtSigned(s.min)}</strong></div>
+          <div class="row"><span>最好</span><strong class="up">${fmtSigned(s.max)}</strong></div>
+          <div class="row"><span>滚动样本</span><strong>${s.n || 0} 笔</strong></div>
+        </div>
+      `;
+    }
+
+    const groups = windows.map((w, idx) => {
+      const a = w.any || {};
+      const b = w.below_ma || {};
+      const c = w.above_ma || {};
+      const p = w.pair || {};
+
+      // 用偏离度找历史相似位置样本做预估
+      const cur = (DATA && DATA.stats && DATA.stats.current) || {};
+      const series = (DATA && DATA.series) || [];
+      const curBias = cur.bias;
+      const threshold = 3.0;
+      const rets = [];
+      if (curBias != null) {
+        for (let i = 0; i < series.length - w.hold_days; i++) {
+          const s = series[i];
+          if (s.ma == null || s.b == null) continue;
+          if (Math.abs(s.b - curBias) > threshold) continue;
+          rets.push((series[i + w.hold_days].p / s.p - 1) * 100);
+        }
+      }
+      rets.sort((a, b) => a - b);
+      const n = rets.length;
+      let est = null;
+      if (n >= 5) {
+        const median = n % 2 ? rets[n >> 1] : (rets[n / 2 - 1] + rets[n / 2]) / 2;
+        const avg = rets.reduce((a, b) => a + b, 0) / n;
+        const win = rets.filter((r) => r > 0).length / n * 100;
+        est = {
+          n, median: Math.round(median * 100) / 100,
+          avg: Math.round(avg * 100) / 100,
+          win_rate: Math.round(win * 100) / 100,
+          min: Math.round(rets[0] * 100) / 100,
+          max: Math.round(rets[n - 1] * 100) / 100,
+        };
+      }
+
+      const estCard = est ? `
+            <div class="hold-card accent">
+              <div class="k">当前买入预估</div>
+              <div class="v ${win(est.median)}">${fmtSigned(est.median)}</div>
+              <div class="s">中位数 · 偏离度 ${fmtSigned(curBias)}±${threshold}% 相似样本</div>
+              <div class="row"><span>预估胜率</span><strong>${pctNum(est.win_rate)}</strong></div>
+              <div class="row"><span>预估平均</span><strong class="${win(est.avg)}">${fmtSigned(est.avg)}</strong></div>
+              <div class="row"><span>历史区间</span><strong>${fmtSigned(est.min)} ~ ${fmtSigned(est.max)}</strong></div>
+              <div class="row"><span>相似样本</span><strong>${est.n} 笔</strong></div>
+            </div>` : '';
+
+      return `
+        <div class="hold-group">
+          <div class="hold-group-title">
+            <strong>${w.label || (idx === 0 ? '持有一年' : '持有三年')}</strong>
+            <span>约 ${w.hold_days} 个交易日 · 任意 vs 年线下</span>
+          </div>
+          <div class="hold-grid">
+            ${block('任意时点买入', a, false)}
+            ${block('年线以下买入', b, true)}
+            ${block('年线以上买入 · 对照', c, false)}
+            ${estCard}
+          </div>
+          <div class="hold-note">
+            年线下买入相对任意买入：
+            平均 <strong class="${win(p.avg_diff)}">${fmtSigned(p.avg_diff)}</strong>
+            ｜中位数 <strong class="${win(p.median_diff)}">${fmtSigned(p.median_diff)}</strong>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = groups + `
+      <div class="hold-foot">${hs.note || ''}</div>
+    `;
+  }
+
+  function percentileOf(arr, val) {
+    if (!arr.length || val == null) return 0.5;
+    let count = 0;
+    for (const v of arr) { if (v <= val) count++; }
+    return count / arr.length;
+  }
+
+  function renderIndicators(ind) {
+    const box = document.getElementById('indStats');
+    const note = document.getElementById('indNote');
+    if (!box || !ind) return;
+    const dy = ind.dividend_yield;
+    const y10 = ind.yield10;
+    const sp = ind.spread;
+
+    const series = (DATA && DATA.series) || [];
+    const dyVals = series.map((s) => s.dy).filter((v) => v != null);
+    const spVals = series.map((s) => s.sp).filter((v) => v != null);
+    const bVals = series.map((s) => s.b).filter((v) => v != null);
+    const curBias = (DATA && DATA.stats && DATA.stats.current && DATA.stats.current.bias) || null;
+
+    const dyScore = Math.round(percentileOf(dyVals, dy) * 100);
+    const spScore = Math.round(percentileOf(spVals, sp) * 100);
+    const bScore = Math.round((1 - percentileOf(bVals, curBias)) * 100);
+    const totalScore = Math.round(dyScore * 0.37 + spScore * 0.12 + bScore * 0.51);
+
+    const scoreColor = totalScore >= 70 ? 'var(--above)' : totalScore >= 40 ? '#B45309' : 'var(--below)';
+    const scoreLabel = totalScore >= 70 ? '偏便宜' : totalScore >= 40 ? '中性' : '偏贵';
+
+    const thermo = document.getElementById('thermoWrap');
+    if (thermo) {
+      thermo.innerHTML = `
+      <div class="card" style="cursor:default;grid-column:1/-1;border-color:${scoreColor}33">
+        <div class="k">估值温度计 · 越高越便宜</div>
+        <div class="v" style="font-size:36px;color:${scoreColor}">${totalScore}</div>
+        <div class="s"><strong style="color:${scoreColor}">${scoreLabel}</strong> · 股息率x37% + 利差x12% + 年线偏离(反)x51%</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted);width:70px;flex-shrink:0">股息率</span>
+            <div style="flex:1;height:5px;background:#E7E5E4;border-radius:3px;overflow:hidden"><div style="width:${dyScore}%;height:100%;background:#B45309;border-radius:3px"></div></div>
+            <strong style="font-size:11px;width:28px;text-align:right">${dyScore}</strong>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted);width:70px;flex-shrink:0">股债利差</span>
+            <div style="flex:1;height:5px;background:#E7E5E4;border-radius:3px;overflow:hidden"><div style="width:${spScore}%;height:100%;background:#7C3AED;border-radius:3px"></div></div>
+            <strong style="font-size:11px;width:28px;text-align:right">${spScore}</strong>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted);width:70px;flex-shrink:0">年线偏离</span>
+            <div style="flex:1;height:5px;background:#E7E5E4;border-radius:3px;overflow:hidden"><div style="width:${bScore}%;height:100%;background:#1D4ED8;border-radius:3px"></div></div>
+            <strong style="font-size:11px;width:28px;text-align:right">${bScore}</strong>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    box.innerHTML = `
+      <div class="card" style="cursor:default">
+        <div class="k">股息率（Σ股利/Σ市值）</div>
+        <div class="v up">${dy == null ? '—' : Number(dy).toFixed(2) + '%'}</div>
+        <div class="s">${ind.date || ''} · 分位 ${dyScore}</div>
+      </div>
+      <div class="card" style="cursor:default">
+        <div class="k">10Y 国债收益率</div>
+        <div class="v">${y10 == null ? '—' : Number(y10).toFixed(2) + '%'}</div>
+        <div class="s">${ind.date || ''} · 中债国债到期收益率曲线</div>
+      </div>
+      <div class="card" style="cursor:default">
+        <div class="k">股债利差</div>
+        <div class="v ${sp != null && sp >= 0 ? 'up' : 'down'}">${sp == null ? '—' : (sp >= 0 ? '+' : '') + Number(sp).toFixed(2) + '%'}</div>
+        <div class="s">股息率 − 10Y · 分位 ${spScore}</div>
+      </div>
+    `;
+    if (note) {
+      note.innerHTML = `口径：股息率 = Σ成分股近12月现金股利和 ÷ Σ指数总市值 = Σ(TTM税前每股分红 × 总股本) ÷ Σ(股价 × 总股本)（不是个股权重×股息率加权；TTM 按除息日落入近365天、税前、剔除预案）；
+        成分取基金中报/年报完整持仓；股本为当前总股本近似；国债取中债 10 年期到期收益率（东方财富收益率曲线）；股债利差 = 股息率 − 10Y。`;
+    }
+  }
+
+  function drawYield() {
+    if (!DATA || !DATA.series || !DATA.series.length || !yCanvas) return;
+    const ctxY = yCanvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = yCanvas.clientWidth || 600;
+    const cssH = yCanvas.clientHeight || 260;
+    yCanvas.width = Math.max(1, Math.floor(cssW * dpr));
+    yCanvas.height = Math.max(1, Math.floor(cssH * dpr));
+    ctxY.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const padL = 46, padR = 12, padT = 12, padB = 28;
+    const w = cssW - padL - padR;
+    const h = cssH - padT - padB;
+    const rows = DATA.series;
+    const n = rows.length;
+    const xs = (i) => padL + (n <= 1 ? 0 : (i / (n - 1)) * w);
+
+    let min = Infinity, max = -Infinity;
+    for (const r of rows) {
+      for (const key of ['dy', 'y10', 'sp']) {
+        const v = r[key];
+        if (v == null || isNaN(v)) continue;
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    if (!isFinite(min) || !isFinite(max)) {
+      ctxY.fillStyle = '#78716C';
+      ctxY.font = '12px sans-serif';
+      ctxY.fillText('暂无收益率数据', padL, cssH / 2);
+      return;
+    }
+    const pad = (max - min) * 0.12 || 1;
+    min -= pad; max += pad;
+    const ys = (v) => padT + (1 - (v - min) / (max - min)) * h;
+
+    // zero line for spread
+    if (min < 0 && max > 0) {
+      ctxY.strokeStyle = 'rgba(124,58,237,.35)';
+      ctxY.setLineDash([4, 4]);
+      ctxY.beginPath();
+      ctxY.moveTo(padL, ys(0));
+      ctxY.lineTo(padL + w, ys(0));
+      ctxY.stroke();
+      ctxY.setLineDash([]);
+    }
+
+    // grid + labels
+    ctxY.strokeStyle = '#E7E5E4';
+    ctxY.lineWidth = 1;
+    ctxY.font = '10px -apple-system, PingFang SC, sans-serif';
+    ctxY.fillStyle = '#A8A29E';
+    for (let t = 0; t <= 4; t++) {
+      const v = min + (max - min) * (t / 4);
+      const yy = ys(v);
+      ctxY.beginPath();
+      ctxY.moveTo(padL, yy);
+      ctxY.lineTo(padL + w, yy);
+      ctxY.stroke();
+      ctxY.fillText(v.toFixed(2), 6, yy + 3);
+    }
+
+    const labN = cssW < 480 ? 4 : 6;
+    for (let t = 0; t < labN; t++) {
+      const i = Math.round((t * (n - 1)) / (labN - 1));
+      ctxY.fillText(rows[i].d.slice(2, 7), xs(i) - 14, cssH - 8);
+    }
+
+    function line(key, color, width) {
+      ctxY.beginPath();
+      let seg = [];
+      const flush = () => {
+        if (seg.length >= 2) drawSmoothCurve(ctxY, seg);
+        else if (seg.length === 1) ctxY.lineTo(seg[0][0], seg[0][1]);
+        seg = [];
+      };
+      for (let i = 0; i < n; i++) {
+        const v = rows[i][key];
+        if (v == null || isNaN(v)) { flush(); continue; }
+        seg.push([xs(i), ys(v)]);
+      }
+      flush();
+      ctxY.strokeStyle = color;
+      ctxY.lineWidth = width;
+      ctxY.stroke();
+    }
+
+    // spread area fill when positive
+    ctxY.beginPath();
+    let areaSeg = [];
+    const flushArea = () => {
+      if (areaSeg.length >= 2) drawSmoothCurve(ctxY, areaSeg);
+      else if (areaSeg.length === 1) ctxY.lineTo(areaSeg[0][0], areaSeg[0][1]);
+      areaSeg = [];
+    };
+    for (let i = 0; i < n; i++) {
+      const v = rows[i].sp;
+      if (v == null || isNaN(v)) { flushArea(); continue; }
+      areaSeg.push([xs(i), ys(v)]);
+    }
+    // spread area fill when positive
+    if (areaSeg.length >= 2) {
+      ctxY.beginPath();
+      ctxY.moveTo(areaSeg[0][0], ys(0));
+      ctxY.lineTo(areaSeg[0][0], areaSeg[0][1]);
+      for (let i = 1; i < areaSeg.length - 1; i++) {
+        const xc = (areaSeg[i][0] + areaSeg[i + 1][0]) / 2;
+        const yc = (areaSeg[i][1] + areaSeg[i + 1][1]) / 2;
+        ctxY.quadraticCurveTo(areaSeg[i][0], areaSeg[i][1], xc, yc);
+      }
+      const last = areaSeg[areaSeg.length - 1];
+      ctxY.lineTo(last[0], last[1]);
+      ctxY.lineTo(last[0], ys(0));
+      ctxY.closePath();
+      ctxY.fillStyle = 'rgba(124,58,237,.12)';
+      ctxY.fill();
+    }
+
+    line('dy', '#B45309', 1.8);
+    line('y10', '#1D4ED8', 1.8);
+    line('sp', '#7C3AED', 2.2);
+
+    if (hoverIdx != null && hoverIdx >= 0 && hoverIdx < n) {
+      const xx = xs(hoverIdx);
+      ctxY.strokeStyle = 'rgba(28,25,23,.25)';
+      ctxY.lineWidth = 1;
+      ctxY.beginPath();
+      ctxY.moveTo(xx, padT);
+      ctxY.lineTo(xx, padT + h);
+      ctxY.stroke();
+    }
+  }
 
   async function boot() {
     try {
@@ -512,7 +1218,10 @@
       renderStats(DATA.stats);
       renderTables(DATA);
       renderNote(DATA);
+      renderHold(DATA.hold_stats);
+      renderIndicators(DATA.indicators || (DATA.stats && DATA.stats.indicators) || null);
       draw();
+      drawYield();
     } catch (err) {
       console.error(err);
       showError('无法加载 data.json：' + (err && err.message ? err.message : err));
