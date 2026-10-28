@@ -316,21 +316,43 @@ def price_on(price_map: dict[str, float], date: str) -> float | None:
     return ans
 
 
+def ttm_dps(evs: list[dict], asof: str, start: str, date_key: str = "ex_date") -> float:
+    """TTM 税前每股分红。除息日落入 (start, asof]；若窗口内为 0（年付一次且间隔>365天
+    造成的空窗，例如中国神华 2020-06-15→2021-07-12），回退为最近一个已除息日历年的分红，
+    避免分子被清零导致股息率假性塌陷。"""
+    ttm = 0.0
+    for e in evs:
+        day = e.get(date_key) or ""
+        if day and start < day <= asof:
+            ttm += e["dps"]
+    if ttm > 0:
+        return ttm
+    paid = [e for e in evs if e.get(date_key) and e[date_key] <= asof]
+    if not paid:
+        return 0.0
+    paid.sort(key=lambda e: e[date_key])
+    year = paid[-1][date_key][:4]
+    return sum(e["dps"] for e in paid if e[date_key][:4] == year)
+
+
 def build_dividend_yield(
     dates: list[str],
     holdings: list[dict],
     events: dict[str, list[dict]],
-    shares: dict[str, dict[str, float]],
+    shares: dict[str, dict[str, float]] | None = None,
     date_key: str = "ex_date",
     share_key: str = "total_sh",
 ) -> list[float | None]:
     """官方口径：股息率 = Σ(近12月现金股利) / Σ(指数总市值)
 
-        = Σ(TTM每股税前分红_i × 股本_i) / Σ(股价_i × 股本_i)
+        = Σ(w_i × TTM每股税前分红_i) / Σ(w_i × 股价_i)
 
-    不是个股权重×股息率的加权平均。股本默认用总股本（对应「总市值」）；
-    TTM 现金分红按除息日 EX_DIVIDEND_DATE 落入 (t-365, t] 汇总，税前、剔除预案。
-    历史点股本取当前总股本近似（股本变动通常缓慢）。
+    不是个股股息率的加权平均 Σ(w×dy)/Σw。
+    权重 w 取基金中报/年报完整持仓（成分/权重代理）。
+    TTM 现金分红按除息日 EX_DIVIDEND_DATE 落入 (t-365, t] 汇总，税前、剔除预案；
+    窗口空窗用 ttm_dps 回退，避免假性塌陷。
+    历史锚点对照：2024-09-20 官方 5.16%；2026-06-30 官方 5.08%；2026-10-28 官方 4.59%。
+    总股本直乘口径在 2026-06 会偏低约 0.3pp，故不用。
     """
     codes: set[str] = set()
     for q in holdings:
@@ -386,19 +408,16 @@ def build_dividend_yield(
         num = den = 0.0
         for it in snap["items"]:
             code = it["code"]
-            px = price_on(prices.get(code, {}), d)
-            sh = (shares.get(code) or {}).get(share_key)
-            if not px or not sh or sh <= 0:
+            w = it.get("weight") or 0.0
+            if w <= 0:
                 continue
-            dps = 0.0
-            for e in events.get(code, []):
-                day = e.get(date_key) or ""
-                # left-open window: avoids double-counting boundary annual dividends
-                if day and start < day <= d:
-                    dps += e["dps"]
-            # Σ(现金股利) = Σ(DPS × 股本)；Σ(市值) = Σ(价 × 股本)
-            num += dps * sh
-            den += px * sh
+            px = price_on(prices.get(code, {}), d)
+            if not px:
+                continue
+            dps = ttm_dps(events.get(code, []), d, start, date_key=date_key)
+            # Σ(现金股利) = Σ(w × DPS)；Σ(市值) = Σ(w × 价)
+            num += w * dps
+            den += w * px
         if den > 0:
             dy[i] = num / den * 100.0
     return dy
@@ -508,14 +527,13 @@ def main() -> int:
     mas = ma_series(values)
 
     # ---- dividend yield & treasury spread ----
-    # 官方口径：Σ(近12月现金股利) / Σ(总市值) = Σ(DPS×股本)/Σ(价×股本)
+    # 官方口径：Σ(近12月现金股利) / Σ(总市值) = Σ(w×DPS)/Σ(w×价)
     n = len(values)
     try:
         holdings = load_holdings()
         codes = sorted({it["code"] for q in holdings for it in q["items"]})
         events = load_dividend_events(codes)
-        shares = load_share_counts(codes)
-        dy = build_dividend_yield(dates, holdings, events, shares)
+        dy = build_dividend_yield(dates, holdings, events)
     except Exception as e:  # noqa: BLE001
         print(f"warn: dividend yield failed: {e}")
         dy = [None] * n
@@ -748,7 +766,7 @@ def main() -> int:
         "yield10": None if y10_series[last_i] is None else round(y10_series[last_i], 3),
         "spread": None if spread[last_i] is None else round(spread[last_i], 3),
         "date": dates[last_i],
-        "note": "股息率=Σ成分股近12月现金股利和÷Σ指数总市值=Σ(TTM税前每股分红×总股本)÷Σ(股价×总股本)；TTM按除息日落入(t-365,t]汇总、剔除预案；成分取基金中报/年报完整持仓；股本为当前总股本近似；利差=股息率-10Y国债收益率",
+        "note": "股息率=Σ成分股近12月现金股利和÷Σ指数总市值=Σ(权重×TTM税前每股分红)÷Σ(权重×股价)；TTM按除息日落入(t-365,t]、税前、剔除预案；若窗口空窗（年付间隔>365天）回退最近已除息日历年分红；权重取基金中报/年报完整持仓；不是个股股息率加权平均；利差=股息率-10Y国债收益率",
     }
 
     payload = {
